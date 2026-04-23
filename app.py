@@ -18,18 +18,26 @@ import os
 import tempfile
 import uuid
 import logging
+import time
+import zipfile
 from PIL import Image
-from ultralytics import YOLO
 from blue_point_detector import detect_blue_points, draw_detected_points
+
+try:
+    from ultralytics import YOLO
+except ModuleNotFoundError:
+    YOLO = None
 
 
 # ==================== CONFIGURATION ====================
 BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(os.path.dirname(BASE_DIR), "best.pt")
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+MODEL_PATH = None
 IMAGE_SIZE          = 256
 PIXELS_PER_CM       = 100
 CONFIDENCE_THRESHOLD = 0.25
 MASK_THRESHOLD      = 0.5
+MODEL_CACHE_DIR     = os.path.join(BASE_DIR, ".model_cache")
 
 # ==================== LOGGING ====================
 logging.basicConfig(level=logging.INFO)
@@ -49,14 +57,129 @@ app.add_middleware(
 # ==================== LOAD MODEL ====================
 model = None
 
+
+def _is_supported_model_file(path: str) -> bool:
+    supported_suffixes = (
+        ".pt",
+        ".torchscript",
+        ".onnx",
+        ".engine",
+        ".mlpackage",
+        ".tflite",
+        ".pb",
+        ".mnn",
+        ".ncnn",
+        ".rknn",
+        ".bin",
+    )
+    return os.path.isfile(path) and path.lower().endswith(supported_suffixes)
+
+
+def _find_torch_archive_root(path: str) -> str | None:
+    required_files = {"data.pkl", "version", "byteorder"}
+    if not os.path.isdir(path):
+        return None
+
+    direct_files = set(os.listdir(path))
+    if required_files.issubset(direct_files):
+        return path
+
+    for entry in os.listdir(path):
+        candidate = os.path.join(path, entry)
+        if not os.path.isdir(candidate):
+            continue
+        candidate_files = set(os.listdir(candidate))
+        if required_files.issubset(candidate_files):
+            return candidate
+    return None
+
+
+def _latest_mtime(path: str) -> float:
+    latest = os.path.getmtime(path)
+    if os.path.isdir(path):
+        for root, _, files in os.walk(path):
+            latest = max(latest, os.path.getmtime(root))
+            for name in files:
+                latest = max(latest, os.path.getmtime(os.path.join(root, name)))
+    return latest
+
+
+def _repack_unpacked_torch_model(model_dir: str) -> str:
+    archive_root = _find_torch_archive_root(model_dir)
+    if archive_root is None:
+        raise FileNotFoundError(f"No unpacked torch archive found under {model_dir}")
+
+    os.makedirs(MODEL_CACHE_DIR, exist_ok=True)
+    output_name = f"{os.path.basename(model_dir.rstrip(os.sep))}_restored.pt"
+    output_path = os.path.join(MODEL_CACHE_DIR, output_name)
+
+    if os.path.exists(output_path) and os.path.getmtime(output_path) >= _latest_mtime(model_dir):
+        return output_path
+
+    archive_parent = os.path.dirname(archive_root)
+    with zipfile.ZipFile(output_path, "w", compression=zipfile.ZIP_STORED) as archive:
+        for root, _, files in os.walk(archive_root):
+            for name in sorted(files):
+                full_path = os.path.join(root, name)
+                relative_path = os.path.relpath(full_path, archive_parent)
+                file_mtime = max(os.path.getmtime(full_path), 315532800)
+                zip_info = zipfile.ZipInfo(
+                    relative_path,
+                    date_time=time.localtime(file_mtime)[:6],
+                )
+                zip_info.compress_type = zipfile.ZIP_STORED
+                with open(full_path, "rb") as src:
+                    archive.writestr(zip_info, src.read())
+
+    logger.warning("Rebuilt unpacked torch model from %s to %s", model_dir, output_path)
+    return output_path
+
+
+def resolve_model_path() -> str:
+    env_model_path = os.getenv("MODEL_PATH")
+    candidates = [
+        env_model_path,
+        os.path.join(BASE_DIR, "best.pt"),
+        os.path.join(BASE_DIR, "best.onnx"),
+        os.path.join(BASE_DIR, "best.torchscript"),
+        os.path.join(PROJECT_ROOT, "best.pt"),
+        os.path.join(PROJECT_ROOT, "best.onnx"),
+        os.path.join(PROJECT_ROOT, "best.torchscript"),
+        os.path.join(PROJECT_ROOT, "model_phase_2", "best.pt"),
+        os.path.join(PROJECT_ROOT, "model_phase_2", "best.onnx"),
+        os.path.join(PROJECT_ROOT, "model_phase_2", "best.torchscript"),
+    ]
+
+    for candidate in candidates:
+        if candidate and _is_supported_model_file(candidate):
+            return candidate
+
+    for candidate in candidates:
+        if candidate and os.path.isdir(candidate):
+            archive_root = _find_torch_archive_root(candidate)
+            if archive_root is not None:
+                return _repack_unpacked_torch_model(candidate)
+
+    raise FileNotFoundError(
+        "Could not find YOLO weights in a supported file format. Set MODEL_PATH or place "
+        "best.pt in model_phase_3, the project root, or model_phase_2."
+    )
+
 def load_model_on_startup():
-    global model
+    global model, MODEL_PATH
     try:
-        model = YOLO(MODEL_PATH)
+        if YOLO is None:
+            raise ModuleNotFoundError(
+                "ultralytics is not installed. Install dependencies from requirements.txt."
+            )
+
+        MODEL_PATH = resolve_model_path()
+        model = YOLO(MODEL_PATH, task="segment")
         logger.info(f"✓ YOLO model loaded from {MODEL_PATH}")
     except Exception as e:
         logger.error(f"✗ Failed to load model: {e}")
         model = None
+        MODEL_PATH = None
 
 load_model_on_startup()
 
