@@ -1,0 +1,2050 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 3 — Blue Point Validation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: #1a1f35;
+            --bg-card-hover: #222842;
+            --accent-1: #3b82f6;
+            --accent-2: #0ea5e9;
+            --accent-3: #67e8f9;
+            --accent-glow: rgba(59, 130, 246, 0.25);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: rgba(59, 130, 246, 0.15);
+            --border-active: rgba(59, 130, 246, 0.5);
+            --success: #10b981;
+            --success-bg: rgba(16, 185, 129, 0.1);
+            --danger: #ef4444;
+            --danger-bg: rgba(239, 68, 68, 0.1);
+            --warning: #f59e0b;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at 20% 0%, rgba(59, 130, 246, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(14, 165, 233, 0.06) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            text-align: center;
+            padding: 48px 24px 32px;
+            margin-bottom: 32px;
+        }
+
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(14, 165, 233, 0.15));
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 6px 16px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent-3);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .header-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 8px var(--success);
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(0.8);
+            }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-3) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* ===== PERSISTENT STATS ===== */
+        .persistent-stats {
+            display: none;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            position: sticky;
+            top: 16px;
+            z-index: 50;
+            transition: var(--transition);
+        }
+
+        .persistent-stats.show {
+            display: flex;
+        }
+
+        .stat-pill {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 10px 24px;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .stat-pill strong {
+            color: #60a5fa;
+            font-size: 1.1rem;
+        }
+
+        /* ===== STEPPER ===== */
+        .stepper {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            border-radius: 100px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .step-indicator.active {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(14, 165, 233, 0.2));
+            border-color: var(--accent-1);
+            color: var(--accent-3);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .step-indicator.completed {
+            background: var(--success-bg);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: var(--bg-secondary);
+            border: 1px solid currentColor;
+        }
+
+        .step-indicator.completed .step-num::after {
+            content: '✓';
+        }
+
+        .step-connector {
+            width: 40px;
+            height: 2px;
+            background: var(--border);
+            align-self: center;
+            border-radius: 2px;
+            transition: var(--transition);
+        }
+
+        .step-connector.active {
+            background: var(--accent-1);
+        }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            border-color: var(--border-active);
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ===== UPLOAD ===== */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent-1);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .upload-zone.has-file {
+            border-color: var(--success);
+            background: var(--success-bg);
+        }
+
+        .upload-zone input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .upload-label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .upload-hint {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .upload-filename {
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: var(--success);
+            font-weight: 500;
+        }
+
+        /* Blue point indicator */
+        .blue-check {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .blue-check.found {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .blue-check.none {
+            background: rgba(100, 116, 139, 0.1);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 100px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            letter-spacing: 0.02em;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            color: white;
+            box-shadow: 0 4px 16px var(--accent-glow);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-active);
+            color: var(--text-primary);
+        }
+
+        .btn-danger {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 24px;
+        }
+
+        /* ===== PIERCING SELECTION GRID ===== */
+        .piercing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .piercing-option {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .piercing-option:hover {
+            border-color: var(--accent-1);
+            background: var(--bg-card-hover);
+            transform: translateY(-4px);
+        }
+
+        .piercing-option.selected {
+            border-color: var(--accent-1);
+            background: rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .piercing-option .icon {
+            font-size: 2rem;
+        }
+
+        .piercing-option .label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .piercing-option .desc {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        /* ===== CANVAS ===== */
+        .canvas-section {
+            display: none;
+        }
+
+        .canvas-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .canvas-container {
+            position: relative;
+            display: inline-block;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            cursor: crosshair;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .canvas-container canvas {
+            display: block;
+        }
+
+        .canvas-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            margin-top: 12px;
+            font-size: 0.85rem;
+        }
+
+        .point-count-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--accent-3);
+            font-weight: 600;
+        }
+
+        .canvas-hint {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* ===== RESULTS ===== */
+        .results-section {
+            display: none;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .ear-result-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .ear-result-header {
+            padding: 14px 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 0.02em;
+        }
+
+        .ear-result-header.right {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(14, 165, 233, 0.1));
+            color: var(--accent-3);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .ear-result-header.left {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.1));
+            color: var(--success);
+            border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .ear-result-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Distance table */
+        .distance-table-wrapper {
+            overflow-x: auto;
+        }
+
+        .distance-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.9rem;
+        }
+
+        .distance-table thead th {
+            background: var(--bg-secondary);
+            padding: 14px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .distance-table tbody td {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .distance-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .distance-table tbody tr:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .pair-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 100px;
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent-3);
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .value-px {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .value-cm {
+            color: var(--success);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .total-row {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(14, 165, 233, 0.08));
+        }
+
+        .total-row td {
+            font-weight: 700 !important;
+            border-top: 2px solid var(--accent-1) !important;
+        }
+
+        /* ===== VALIDATION MODE ===== */
+        .validation-modes {
+            margin-bottom: 32px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .validation-modes .section-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .ear-toggle-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .ear-toggle-row button {
+            padding: 6px 16px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+        }
+
+        .webcam-launch-row {
+            display: flex;
+            justify-content: center;
+        }
+
+        .btn-secondary.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent-1);
+            color: var(--accent-3);
+        }
+
+        /* ===== WEBCAM MODAL ===== */
+        .webcam-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 14, 26, 0.92);
+            backdrop-filter: blur(10px);
+            z-index: 998;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .webcam-modal.show {
+            display: flex;
+        }
+
+        .webcam-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-active);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            max-width: 960px;
+            width: 100%;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .webcam-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .webcam-header h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .ear-toggle {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            justify-content: center;
+        }
+
+        .ear-toggle button {
+            padding: 8px 24px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+
+        .webcam-feeds {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .webcam-feed-box {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .webcam-feed-label {
+            padding: 8px 14px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .webcam-feed-box video,
+        .webcam-feed-box img {
+            width: 100%;
+            height: auto;
+            display: block;
+            min-height: 180px;
+            object-fit: cover;
+            background: #000;
+        }
+
+        .guidance-panel {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 14px 18px;
+            border: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+
+        .guidance-panel h4 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .guidance-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+        }
+
+        .guidance-row:last-child {
+            border-bottom: none;
+        }
+
+        .g-point {
+            font-weight: 700;
+            color: var(--accent-3);
+            min-width: 36px;
+        }
+
+        .g-msg {
+            flex: 1;
+            padding: 0 12px;
+        }
+
+        .g-msg.correct {
+            color: var(--success);
+        }
+
+        .g-msg.wrong {
+            color: var(--warning);
+        }
+
+        .g-msg.missing {
+            color: var(--danger);
+        }
+
+        .g-err {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        /* Score card */
+        .improvement-report {
+            display: none;
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid var(--accent-1);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .improvement-report.show {
+            display: block;
+        }
+
+        .score-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .score-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 4px solid var(--accent-1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+        }
+
+        .score-circle .pct {
+            font-size: 1.2rem;
+        }
+
+        .score-circle .lbl {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .improvement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+        }
+
+        .imp-card {
+            background: var(--bg-card);
+            padding: 12px;
+            border-radius: var(--radius);
+            border-left: 3px solid var(--accent-1);
+        }
+
+        .imp-card.needs-work {
+            border-left-color: var(--warning);
+        }
+
+        .imp-card h5 {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .imp-card .val {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .imp-card .hint {
+            font-size: 0.7rem;
+            color: var(--accent-3);
+            margin-top: 4px;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 24px;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateY(120%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: 380px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: var(--success);
+            color: white;
+        }
+
+        .toast.error {
+            background: var(--danger);
+            color: white;
+        }
+
+        .toast.info {
+            background: var(--accent-1);
+            color: white;
+        }
+
+        /* ===== LOADING ===== */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 14, 26, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent-1);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-text {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+
+            .upload-grid,
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .webcam-feeds {
+                grid-template-columns: 1fr;
+            }
+
+            .app {
+                padding: 12px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+
+        <!-- PERSISTENT STATS BAR (shows after upload) -->
+        <div class="persistent-stats" id="persistentStats">
+            <div class="stat-pill"><span class="stat-icon">👂 Right Ear:</span> <strong
+                    id="rightPointCountPersist">0</strong> blue marks</div>
+            <div class="stat-pill"><span class="stat-icon">👂 Left Ear:</span> <strong
+                    id="leftPointCountPersist">0</strong> blue marks</div>
+        </div>
+
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-badge">Phase 3 — Blue Point Validation</div>
+            <h1>🔵 Blue Point Validator</h1>
+            <p>Upload both ears, mark piercing landmarks on the right ear, then validate physical blue markers in
+                real-time.</p>
+        </div>
+
+        <!-- STEPPER -->
+        <div class="stepper">
+            <div class="step-indicator active" id="step1Indicator"><span class="step-num">1</span> Upload Images</div>
+            <div class="step-connector" id="connector1"></div>
+            <div class="step-indicator" id="step2Indicator"><span class="step-num">2</span> Select Piercing</div>
+            <div class="step-connector" id="connector2"></div>
+            <div class="step-indicator" id="step3Indicator"><span class="step-num">3</span> Mark Points</div>
+            <div class="step-connector" id="connector3"></div>
+            <div class="step-indicator" id="step4Indicator"><span class="step-num">4</span> View Results</div>
+        </div>
+
+        <!-- STEP 1: UPLOAD -->
+        <div class="card" id="uploadCard">
+            <div class="card-title"><span>📤</span> Upload Ear Images</div>
+            <div class="upload-grid">
+                <label class="upload-zone" id="rightUploadZone" for="rightEarInput">
+                    <input type="file" id="rightEarInput" accept="image/*">
+                    <span class="upload-icon">👂</span>
+                    <div class="upload-label">Right Ear</div>
+                    <div class="upload-hint">Click to browse or drag & drop</div>
+                    <div class="upload-filename" id="rightFileName"></div>
+                    <div id="rightBlueCheck"></div>
+                </label>
+                <label class="upload-zone" id="leftUploadZone" for="leftEarInput">
+                    <input type="file" id="leftEarInput" accept="image/*">
+                    <span class="upload-icon">👂</span>
+                    <div class="upload-label">Left Ear</div>
+                    <div class="upload-hint">Click to browse or drag & drop</div>
+                    <div class="upload-filename" id="leftFileName"></div>
+                    <div id="leftBlueCheck"></div>
+                </label>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="segmentBtn" onclick="segmentEars()" disabled>
+                    🔬 Segment & Detect Blue Points
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 2: SELECT PIERCING -->
+        <div class="card" id="piercingCard" style="display:none;">
+            <div class="card-title"><span>💎</span> Select Piercing Type</div>
+            <p style="color:var(--text-secondary); margin-bottom:16px; font-size:0.9rem;">
+                Choose the type of piercing you want to plan for. This helps us tailor the marker layout.
+            </p>
+
+            <div class="piercing-grid">
+                <div class="piercing-option" onclick="selectPiercingOption('triangle', this)">
+                    <span class="icon">📐</span>
+                    <span class="label">Triangle Pattern</span>
+                    <span class="desc">3-point balanced design</span>
+                </div>
+                <div class="piercing-option" onclick="selectPiercingOption('snakebite', this)">
+                    <span class="icon">🐍</span>
+                    <span class="label">Snakebite Pattern</span>
+                    <span class="desc">2-point horizontal design</span>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" id="confirmPiercingBtn" onclick="confirmPiercing()" disabled>
+                    Proceed to Point Marking ➔
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 3: MARK LANDMARKS -->
+        <div class="card canvas-section" id="canvasCard">
+            <div class="card-title"><span>📌</span> Mark Points for <span id="selectedPiercingDisplay"
+                    style="color:var(--accent-3); margin-left:5px;">Custom</span> Piercing</div>
+            <p style="color:var(--text-secondary); margin-bottom:16px; font-size:0.9rem;">
+                Click on the right ear image to place landmark points. These will be mirrored to the left ear
+                automatically.
+            </p>
+            <div class="canvas-wrapper">
+                <div class="canvas-container" id="canvasContainer">
+                    <canvas id="earCanvas" width="384" height="384"></canvas>
+                </div>
+            </div>
+            <div class="canvas-info">
+                <div class="point-count-label">📍 <span id="pointCountText">0 points placed</span></div>
+                <div class="canvas-hint">Left click to add &nbsp;|&nbsp; Right click to undo</div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-danger" onclick="clearPoints()">🗑️ Clear All</button>
+                <button class="btn btn-secondary" onclick="undoLastPoint()">↩️ Undo Last</button>
+                <button class="btn btn-secondary" onclick="flipPatternSide()">↔️ Flip Side</button>
+                <button class="btn btn-primary" id="measureBtn" onclick="mirrorAndMeasure()" disabled>
+                    📏 Mirror & Measure
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 3: RESULTS -->
+        <div class="card results-section" id="resultsCard">
+            <div class="card-title"><span>📊</span> Measurement Results</div>
+
+            <!-- Validation launcher -->
+            <div class="validation-modes">
+                <div class="section-label">CHOOSE EAR & LAUNCH VALIDATION</div>
+                <div class="ear-toggle-row">
+                    <button id="valToggleLeft" class="btn btn-secondary active" onclick="setGlobalEarSide('left')">👂
+                        Left Ear</button>
+                    <button id="valToggleRight" class="btn btn-secondary" onclick="setGlobalEarSide('right')">👂 Right
+                        Ear</button>
+                </div>
+                <div class="webcam-launch-row">
+                    <button class="btn btn-primary" id="openWebcamBtn" onclick="openWebcam()"
+                        style="background:linear-gradient(135deg,#10b981,#059669); max-width:220px; font-size:0.85rem;">
+                        🎥 Real-time Webcam
+                    </button>
+                </div>
+            </div>
+
+            <!-- Ear images with landmarks -->
+            <div class="results-grid" id="resultImages"></div>
+
+            <!-- Distance table -->
+            <div class="distance-table-wrapper" style="margin-top:24px;">
+                <table class="distance-table" id="distanceTable">
+                    <thead>
+                        <tr>
+                            <th>Pair</th>
+                            <th>Distance (px)</th>
+                            <th>Distance (cm)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="distanceBody"></tbody>
+                </table>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goBackToLandmarks()">↩️ Re-mark Landmarks</button>
+                <button class="btn btn-danger" onclick="resetAll()">🔄 Start Over</button>
+            </div>
+        </div>
+
+    </div><!-- /app -->
+
+    <!-- WEBCAM MODAL -->
+    <div class="webcam-modal" id="webcamModal">
+        <div class="webcam-box">
+            <div class="webcam-header">
+                <h3>🎥 Live Blue Marker Validation</h3>
+                <button class="btn btn-danger" onclick="stopWebcam()" style="padding:8px 18px;">✕ Close</button>
+            </div>
+
+            <div class="ear-toggle">
+                <button id="toggleLeft" class="active" onclick="setEarSide('left')">👂 Left Ear</button>
+                <button id="toggleRight" onclick="setEarSide('right')">👂 Right Ear</button>
+            </div>
+
+            <div class="webcam-feeds">
+                <div class="webcam-feed-box">
+                    <div class="webcam-feed-label">📷 Your Webcam</div>
+                    <video id="webcamVideo" autoplay playsinline muted></video>
+                    <canvas id="captureCanvas" style="display:none;"></canvas>
+                </div>
+                <div class="webcam-feed-box">
+                    <div class="webcam-feed-label">🤖 AI Annotated View</div>
+                    <img id="annotatedImg" src="" alt="Waiting..." style="min-height:200px; background:#000;">
+                </div>
+            </div>
+
+            <div style="text-align:center; margin-bottom:15px;">
+                <button class="btn btn-primary" id="analyzeBtn" onclick="captureSnapshot()"
+                    style="padding:12px 30px; font-size:1rem; width:100%;">
+                    📸 Capture & Analyze Snapshot
+                </button>
+            </div>
+
+            <!-- Improvement report -->
+            <div class="improvement-report" id="improvementReport">
+                <div class="score-header">
+                    <div>
+                        <h4 style="margin:0; color:var(--text-primary);">Per-Point Guidance</h4>
+                        <p id="overallStatus"
+                            style="margin:0; font-size:0.85rem; color:var(--accent-1); font-weight:600;"></p>
+                    </div>
+                    <div class="score-circle">
+                        <span class="pct" id="accuracyPct">0%</span>
+                        <span class="lbl">Accuracy</span>
+                    </div>
+                </div>
+                <div class="improvement-grid" id="improvementGrid"></div>
+            </div>
+
+            <p style="font-size:0.78rem; color:var(--text-muted); text-align:center; margin-top:15px;">
+                Place <strong style="color:var(--text-primary);">blue markers</strong> on the physical ear and hold it
+                in front of the camera.<br>
+                Black rings = digital targets &nbsp;|&nbsp; Solid blue dots = detected physical markers
+            </p>
+        </div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loader"></div>
+        <div class="loading-text" id="loadingText">Processing...</div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ==================== CONFIG ====================
+        const API_URL = "http://localhost:8080";
+        const IMAGE_SIZE = 256;
+        const DISPLAY_SIZE = 384;
+
+        // ==================== STATE ====================
+        let rightFile = null;
+        let leftFile = null;
+        let sessionId = null;
+        let rightEarImage = null; // base64
+        let leftEarImage = null; // base64
+        let markedPoints = [];
+        let canvasImg = null;
+        let currentEarSide = 'left';
+        let webcamStream = null;
+        let isWebcamRunning = false;
+        let lastCapturedBlob = null;
+        let rightBluePointsCoords = [];
+        let rightBluePointsCount = 0;
+        let isTriangleLocked = false;
+        let isSnakebiteLocked = false;
+
+        // --- Triangle Transformer State ---
+        let triangleTransform = {
+            active: false,
+            centerX: 128,
+            centerY: 215, // Lower center for Lobe placement
+            scale: 1.0,
+            rotation: 0,
+            basePoints: [
+                { x: 0, y: -14 }, // Top point
+                { x: 12, y: 7 }, // Bottom right
+                { x: -12, y: 7 }  // Bottom left
+            ]
+        };
+
+        // --- Snakebite Transformer State ---
+        let snakebiteTransform = {
+            active: false,
+            centerX: 128,
+            centerY: 215,
+            scale: 1.0,
+            rotation: 0,
+            basePoints: [
+                { x: -10, y: 0 },
+                { x: 10, y: 0 }
+            ]
+        };
+
+        let transformMode = null; // 'move', 'stretch', 'rotate'
+        let dragStartPos = null;
+        let initialTransform = null;
+        let activeVertexIndex = -1;
+
+        // ==================== FILE INPUTS ====================
+        document.getElementById("rightEarInput").addEventListener("change", (e) => {
+            rightFile = e.target.files[0];
+            if (rightFile) {
+                document.getElementById("rightFileName").textContent = `✓ ${rightFile.name}`;
+                document.getElementById("rightUploadZone").classList.add("has-file");
+            }
+            updateSegmentButton();
+        });
+
+        document.getElementById("leftEarInput").addEventListener("change", (e) => {
+            leftFile = e.target.files[0];
+            if (leftFile) {
+                document.getElementById("leftFileName").textContent = `✓ ${leftFile.name}`;
+                document.getElementById("leftUploadZone").classList.add("has-file");
+            }
+            updateSegmentButton();
+        });
+
+        function updateSegmentButton() {
+            document.getElementById("segmentBtn").disabled = !(rightFile && leftFile);
+        }
+
+        // ==================== PIERCING SELECTION ====================
+        let selectedPiercing = null;
+
+        function selectPiercingOption(type, element) {
+            selectedPiercing = type;
+            document.querySelectorAll('.piercing-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            document.getElementById("confirmPiercingBtn").disabled = false;
+            showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} selected`, "info");
+        }
+
+        function confirmPiercing() {
+            if (!selectedPiercing) return;
+            document.getElementById("selectedPiercingDisplay").textContent = selectedPiercing.charAt(0).toUpperCase() + selectedPiercing.slice(1);
+
+            markedPoints = [];
+            triangleTransform.active = false;
+            snakebiteTransform.active = false;
+            isTriangleLocked = false;
+            isSnakebiteLocked = false;
+
+            if (selectedPiercing === 'triangle') {
+                if (rightBluePointsCount >= 1) {
+                    // Take exactly up to 3 points from detections
+                    markedPoints = rightBluePointsCoords.slice(0, 3).map(p => ({ x: p.x, y: p.y }));
+                    
+                    if (markedPoints.length === 1) {
+                        const p = markedPoints[0];
+                        markedPoints.push({ x: p.x + 15, y: p.y + 20 });
+                        markedPoints.push({ x: p.x - 15, y: p.y + 20 });
+                        showToast("1 point detected: Completed triangle. Adjust as needed.", "success");
+                    } else if (markedPoints.length === 2) {
+                        const p1 = markedPoints[0];
+                        const p2 = markedPoints[1];
+                        const midX = (p1.x + p2.x) / 2;
+                        markedPoints.push({ x: midX, y: Math.max(p1.y, p2.y) + 20 });
+                        showToast("2 points detected: Added 3rd point. Adjust as needed.", "success");
+                    } else {
+                        showToast(`3 points used from ${rightBluePointsCount} detected.`, "success");
+                    }
+                    isTriangleLocked = false;
+                } else {
+                    // NORMAL MODE: 0 points -> Draggable Transformer
+                    triangleTransform.active = true;
+                    triangleTransform.centerX = 128;
+                    triangleTransform.centerY = 215;
+                    triangleTransform.scale = 1.0;
+                    triangleTransform.rotation = 0;
+                    showToast("Normal Mode: Move and adjust the triangle", "info");
+                }
+            } else if (selectedPiercing === 'snakebite') {
+                if (rightBluePointsCount >= 1) {
+                    // Take exactly up to 2 points from detections
+                    markedPoints = rightBluePointsCoords.slice(0, 2).map(p => ({ x: p.x, y: p.y }));
+                    if (markedPoints.length === 1) {
+                        const p = markedPoints[0];
+                        markedPoints.push({ x: p.x + 20, y: p.y });
+                        showToast("1 point detected: Added 2nd point. Adjust as needed.", "success");
+                    } else {
+                        showToast(`2 points used from ${rightBluePointsCount} detected.`, "success");
+                    }
+                    isSnakebiteLocked = false;
+                } else {
+                    snakebiteTransform.active = true;
+                    snakebiteTransform.centerX = 128;
+                    snakebiteTransform.centerY = 215;
+                    snakebiteTransform.scale = 1.0;
+                    snakebiteTransform.rotation = 0;
+                    showToast("Snakebite selected: Adjust the 2-point pattern", "info");
+                }
+            } else if (selectedPiercing === 'snake_curve') {
+                markedPoints = [
+                    { x: 121, y: 60 }, { x: 91, y: 80 }, { x: 71, y: 115 },
+                    { x: 66, y: 160 }, { x: 81, y: 205 }, { x: 111, y: 240 }
+                ];
+            } else if (selectedPiercing === 'lobe') {
+                markedPoints = [{ x: 128, y: 220 }];
+            }
+
+            setStep(3);
+            if (canvasImg) {
+                drawCanvas();
+                updatePointCount();
+            }
+        }
+
+        function getTransformedTrianglePoints() {
+            if (!triangleTransform.active) return [];
+            return triangleTransform.basePoints.map(p => {
+                const sc = triangleTransform.scale;
+                const rt = triangleTransform.rotation;
+                // Rotate & Scale
+                const rx = (p.x * sc) * Math.cos(rt) - (p.y * sc) * Math.sin(rt);
+                const ry = (p.x * sc) * Math.sin(rt) + (p.y * sc) * Math.cos(rt);
+                return { x: triangleTransform.centerX + rx, y: triangleTransform.centerY + ry };
+            });
+        }
+
+        function getTransformedSnakebitePoints() {
+            if (!snakebiteTransform.active) return [];
+            return snakebiteTransform.basePoints.map(p => {
+                const sc = snakebiteTransform.scale;
+                const rt = snakebiteTransform.rotation;
+                const rx = (p.x * sc) * Math.cos(rt) - (p.y * sc) * Math.sin(rt);
+                const ry = (p.x * sc) * Math.sin(rt) + (p.y * sc) * Math.cos(rt);
+                return { x: snakebiteTransform.centerX + rx, y: snakebiteTransform.centerY + ry };
+            });
+        }
+
+        // ==================== STEP 1: SEGMENT ====================
+        async function segmentEars() {
+            if (!rightFile || !leftFile) { showToast("Please select both ear images", "error"); return; }
+
+            const formData = new FormData();
+            formData.append("rightEar", rightFile);
+            formData.append("leftEar", leftFile);
+
+            try {
+                showLoading("Segmenting ears & detecting blue points...");
+                const resp = await fetch(`${API_URL}/segment`, { method: "POST", body: formData });
+                if (!resp.ok) { const e = await resp.json(); throw new Error(e.detail || "Segmentation failed"); }
+
+                const result = await resp.json();
+                const data = result.data;
+                sessionId = data.session_id;
+                rightEarImage = data.right_ear_image;
+                leftEarImage = data.left_ear_image;
+                rightBluePointsCount = data.right_blue_points || 0;
+                rightBluePointsCoords = data.right_blue_points_coords || [];
+
+                // Show blue point check badges
+                const rightCheck = document.getElementById("rightBlueCheck");
+                const leftCheck = document.getElementById("leftBlueCheck");
+                if (data.right_blue_points > 0) {
+                    rightCheck.innerHTML = `<span class="blue-check found">🔵 ${data.right_blue_points} blue point(s) detected</span>`;
+                } else {
+                    rightCheck.innerHTML = `<span class="blue-check none">No blue points detected</span>`;
+                }
+                if (data.left_blue_points > 0) {
+                    leftCheck.innerHTML = `<span class="blue-check found">🔵 ${data.left_blue_points} blue point(s) detected</span>`;
+                } else {
+                    leftCheck.innerHTML = `<span class="blue-check none">No blue points detected</span>`;
+                }
+
+                // Update and show persistent stats bar
+                document.getElementById("rightPointCountPersist").textContent = data.right_blue_points;
+                document.getElementById("leftPointCountPersist").textContent = data.left_blue_points;
+                document.getElementById("persistentStats").classList.add("show");
+
+                setupCanvas();
+                setStep(2);
+                showToast("Ears segmented! Now mark the piercing points.", "success");
+
+            } catch (err) {
+                showToast(err.message, "error");
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Draggable point state
+        let isDragging = false;
+        let dragIndex = -1;
+
+        function setupCanvas() {
+            const canvas = document.getElementById("earCanvas");
+            canvas.width = DISPLAY_SIZE;
+            canvas.height = DISPLAY_SIZE;
+            canvas.style.width = DISPLAY_SIZE + "px";
+            canvas.style.height = DISPLAY_SIZE + "px";
+
+            canvasImg = new window.Image();
+            canvasImg.onload = () => drawCanvas();
+            canvasImg.src = `data:image/png;base64,${rightEarImage}`;
+
+            // EVENT LISTENERS
+            canvas.addEventListener("mousedown", onMouseDown);
+            window.addEventListener("mousemove", onMouseMove); // Track on window to handle fast drags
+            window.addEventListener("mouseup", onMouseUp);
+            canvas.addEventListener("contextmenu", (e) => { e.preventDefault(); undoLastPoint(); });
+        }
+
+        function getMousePos(e) {
+            const canvas = document.getElementById("earCanvas");
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = IMAGE_SIZE / rect.width;
+            const scaleY = IMAGE_SIZE / rect.height;
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top) * scaleY
+            };
+        }
+
+        function onMouseDown(e) {
+            const pos = getMousePos(e);
+            const threshold = 12; // Detection radius in 256x256 coordinates
+
+            // 1. Check Triangle Transformer if active
+            if (triangleTransform.active) {
+                const pts = getTransformedTrianglePoints();
+
+                // Check vertices (Stretch) -> Uniform Scaling
+                for (let i = 0; i < pts.length; i++) {
+                    if (Math.hypot(pts[i].x - pos.x, pts[i].y - pos.y) < threshold) {
+                        transformMode = 'stretch';
+                        activeVertexIndex = i;
+                        dragStartPos = pos;
+                        initialTransform = { ...triangleTransform };
+                        return;
+                    }
+                }
+
+                // Check Rotation Handle (Small dot above the top vertex)
+                const hRel = { x: 0, y: -50 * triangleTransform.scale - 30 };
+                const rotX = triangleTransform.centerX + (hRel.x * Math.cos(triangleTransform.rotation) - hRel.y * Math.sin(triangleTransform.rotation));
+                const rotY = triangleTransform.centerY + (hRel.x * Math.sin(triangleTransform.rotation) + hRel.y * Math.cos(triangleTransform.rotation));
+
+                if (Math.hypot(rotX - pos.x, rotY - pos.y) < threshold + 8) {
+                    transformMode = 'rotate';
+                    dragStartPos = pos;
+                    initialTransform = { ...triangleTransform };
+                    return;
+                }
+
+                // Check Interior (Move)
+                if (Math.hypot(triangleTransform.centerX - pos.x, triangleTransform.centerY - pos.y) < 40 * triangleTransform.scale) {
+                    transformMode = 'move';
+                    dragStartPos = pos;
+                    initialTransform = { ...triangleTransform };
+                    return;
+                }
+            }
+
+            // 1b. Check Snakebite Transformer if active
+            if (snakebiteTransform.active) {
+                const pts = getTransformedSnakebitePoints();
+                for (let i = 0; i < pts.length; i++) {
+                    if (Math.hypot(pts[i].x - pos.x, pts[i].y - pos.y) < threshold) {
+                        transformMode = 'stretch';
+                        activeVertexIndex = i;
+                        dragStartPos = pos;
+                        initialTransform = { ...snakebiteTransform };
+                        return;
+                    }
+                }
+
+                const hRel = { x: 0, y: -50 * snakebiteTransform.scale - 30 };
+                const rotX = snakebiteTransform.centerX + (hRel.x * Math.cos(snakebiteTransform.rotation) - hRel.y * Math.sin(snakebiteTransform.rotation));
+                const rotY = snakebiteTransform.centerY + (hRel.x * Math.sin(snakebiteTransform.rotation) + hRel.y * Math.cos(snakebiteTransform.rotation));
+
+                if (Math.hypot(rotX - pos.x, rotY - pos.y) < threshold + 8) {
+                    transformMode = 'rotate';
+                    dragStartPos = pos;
+                    initialTransform = { ...snakebiteTransform };
+                    return;
+                }
+
+                if (Math.hypot(snakebiteTransform.centerX - pos.x, snakebiteTransform.centerY - pos.y) < 40 * snakebiteTransform.scale) {
+                    transformMode = 'move';
+                    dragStartPos = pos;
+                    initialTransform = { ...snakebiteTransform };
+                    return;
+                }
+            }
+
+            // 2. Check individual marked points (Existing manual behavior)
+            let foundIndex = -1;
+            let minDist = threshold;
+            markedPoints.forEach((pt, i) => {
+                const d = Math.hypot(pt.x - pos.x, pt.y - pos.y);
+                if (d < minDist) {
+                    minDist = d;
+                    foundIndex = i;
+                }
+            });
+
+            if (foundIndex !== -1) {
+                if (isTriangleLocked || isSnakebiteLocked) return; // Locked points cannot be moved
+                isDragging = true;
+                dragIndex = foundIndex;
+            } else if (!triangleTransform.active && !snakebiteTransform.active) {
+                // No point clicked & no transformer active -> Check if we can add a manual point
+                const isFixedPattern = (selectedPiercing === 'triangle' || selectedPiercing === 'snakebite');
+                
+                if (isFixedPattern) {
+                    showToast(`Cannot add extra points to ${selectedPiercing}. Drag existing points to adjust.`, "warning");
+                } else if (markedPoints.length < 10) {
+                    markedPoints.push({ x: Math.round(pos.x * 100) / 100, y: Math.round(pos.y * 100) / 100 });
+                    drawCanvas();
+                    updatePointCount();
+                }
+            }
+        }
+
+        function onMouseMove(e) {
+            const pos = getMousePos(e);
+
+            // A. Handle Triangle/Snakebite Transformer
+            if (transformMode) {
+                let trans = triangleTransform.active ? triangleTransform : snakebiteTransform;
+
+                if (transformMode === 'move') {
+                    trans.centerX = initialTransform.centerX + (pos.x - dragStartPos.x);
+                    trans.centerY = initialTransform.centerY + (pos.y - dragStartPos.y);
+                }
+                else if (transformMode === 'stretch') {
+                    const initialDist = Math.hypot(
+                        (trans.basePoints[activeVertexIndex].x * initialTransform.scale),
+                        (trans.basePoints[activeVertexIndex].y * initialTransform.scale)
+                    );
+                    const currentDist = Math.hypot(pos.x - trans.centerX, pos.y - trans.centerY);
+
+                    if (initialDist > 5) {
+                        trans.scale = (currentDist / initialDist) * initialTransform.scale;
+                        trans.scale = Math.max(0.2, Math.min(3.0, trans.scale));
+                    }
+                }
+                else if (transformMode === 'rotate') {
+                    const angle = Math.atan2(pos.y - trans.centerY, pos.x - trans.centerX);
+                    const startAngle = Math.atan2(dragStartPos.y - trans.centerY, dragStartPos.x - trans.centerX);
+                    trans.rotation = initialTransform.rotation + (angle - startAngle);
+                }
+                drawCanvas();
+                return;
+            }
+
+            // B. Handle Individual Points
+            if (!isDragging || dragIndex === -1) return;
+
+            pos.x = Math.max(0, Math.min(IMAGE_SIZE, pos.x));
+            pos.y = Math.max(0, Math.min(IMAGE_SIZE, pos.y));
+
+            markedPoints[dragIndex].x = Math.round(pos.x * 100) / 100;
+            markedPoints[dragIndex].y = Math.round(pos.y * 100) / 100;
+
+            drawCanvas();
+        }
+
+        function onMouseUp() {
+            isDragging = false;
+            dragIndex = -1;
+            transformMode = null;
+            updatePointCount();
+        }
+
+        function drawCanvas() {
+            const canvas = document.getElementById("earCanvas");
+            const ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (canvasImg && canvasImg.complete) ctx.drawImage(canvasImg, 0, 0, canvas.width, canvas.height);
+
+            const sx = canvas.width / IMAGE_SIZE;
+            const sy = canvas.height / IMAGE_SIZE;
+
+            // 1. Draw Triangle Transformer Object
+            if (triangleTransform.active) {
+                const pts = getTransformedTrianglePoints();
+
+                // Draw lines
+                ctx.lineWidth = 2.5;
+                ctx.setLineDash([]);
+                ctx.strokeStyle = "rgba(59, 130, 246, 0.8)"; // Blue accent
+                ctx.beginPath();
+                ctx.moveTo(pts[0].x * sx, pts[0].y * sy);
+                ctx.lineTo(pts[1].x * sx, pts[1].y * sy);
+                ctx.lineTo(pts[2].x * sx, pts[2].y * sy);
+                ctx.closePath();
+                ctx.stroke();
+
+                ctx.fillStyle = "rgba(59, 130, 246, 0.1)";
+                ctx.fill();
+
+                // Draw Rotation Handle
+                const hRel = { x: 0, y: -50 * triangleTransform.scale - 30 };
+                const rotX = triangleTransform.centerX + (hRel.x * Math.cos(triangleTransform.rotation) - hRel.y * Math.sin(triangleTransform.rotation));
+                const rotY = triangleTransform.centerY + (hRel.x * Math.sin(triangleTransform.rotation) + hRel.y * Math.cos(triangleTransform.rotation));
+
+                // Line from top vertex to handle
+                const topRel = { x: 0, y: -50 * triangleTransform.scale };
+                const topX = triangleTransform.centerX + (topRel.x * Math.cos(triangleTransform.rotation) - topRel.y * Math.sin(triangleTransform.rotation));
+                const topY = triangleTransform.centerY + (topRel.x * Math.sin(triangleTransform.rotation) + topRel.y * Math.cos(triangleTransform.rotation));
+
+                ctx.setLineDash([4, 2]);
+                ctx.beginPath();
+                ctx.moveTo(topX * sx, topY * sy);
+                ctx.lineTo(rotX * sx, rotY * sy);
+                ctx.strokeStyle = "rgba(255,255,255,0.5)";
+                ctx.stroke();
+
+                ctx.setLineDash([]);
+                ctx.beginPath(); ctx.arc(rotX * sx, rotY * sy, 8, 0, Math.PI * 2);
+                ctx.fillStyle = "#3b82f6"; ctx.fill();
+                ctx.strokeStyle = "white"; ctx.lineWidth = 2; ctx.stroke();
+
+                // Draw points for triangle
+                pts.forEach((pt, i) => {
+                    drawPearl(ctx, pt.x * sx, pt.y * sy, i + 1, (transformMode === 'stretch' && activeVertexIndex === i));
+                });
+            }
+
+            // 1c. Draw Snakebite Transformer Object
+            if (snakebiteTransform.active) {
+                const pts = getTransformedSnakebitePoints();
+
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([4, 4]);
+                ctx.strokeStyle = "rgba(59, 130, 246, 0.4)"; // Much subtler line
+                ctx.beginPath();
+                ctx.moveTo(pts[0].x * sx, pts[0].y * sy);
+                ctx.lineTo(pts[1].x * sx, pts[1].y * sy);
+                ctx.stroke();
+
+                ctx.fillStyle = "rgba(59, 130, 246, 0.05)";
+                ctx.fill();
+
+                const hRel = { x: 0, y: -50 * snakebiteTransform.scale - 30 };
+                const rotX = snakebiteTransform.centerX + (hRel.x * Math.cos(snakebiteTransform.rotation) - hRel.y * Math.sin(snakebiteTransform.rotation));
+                const rotY = snakebiteTransform.centerY + (hRel.x * Math.sin(snakebiteTransform.rotation) + hRel.y * Math.cos(snakebiteTransform.rotation));
+
+                const midpointX = (pts[0].x + pts[1].x) / 2;
+                const midpointY = (pts[0].y + pts[1].y) / 2;
+
+                ctx.setLineDash([4, 2]);
+                ctx.beginPath();
+                ctx.moveTo(midpointX * sx, midpointY * sy);
+                ctx.lineTo(rotX * sx, rotY * sy);
+                ctx.strokeStyle = "rgba(255,255,255,0.5)";
+                ctx.stroke();
+
+                ctx.setLineDash([]);
+                ctx.beginPath(); ctx.arc(rotX * sx, rotY * sy, 8, 0, Math.PI * 2);
+                ctx.fillStyle = "#3b82f6"; ctx.fill();
+                ctx.strokeStyle = "white"; ctx.lineWidth = 2; ctx.stroke();
+
+                pts.forEach((pt, i) => {
+                    drawPearl(ctx, pt.x * sx, pt.y * sy, i + 1, (transformMode === 'stretch' && activeVertexIndex === i), false);
+                });
+            }
+
+            // 2. Draw Individual Marked Points
+            if (markedPoints.length > 0) {
+                // If it's a triangle or snakebite pattern using markedPoints, draw the lines
+                if (selectedPiercing === 'triangle' && markedPoints.length >= 2) {
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 3]);
+                    ctx.strokeStyle = "rgba(59, 130, 246, 0.6)";
+                    ctx.beginPath();
+                    ctx.moveTo(markedPoints[0].x * sx, markedPoints[0].y * sy);
+                    for(let i=1; i<markedPoints.length; i++) ctx.lineTo(markedPoints[i].x * sx, markedPoints[i].y * sy);
+                    if (markedPoints.length === 3) ctx.closePath();
+                    ctx.stroke();
+                } else if (selectedPiercing === 'snakebite' && markedPoints.length === 2) {
+                    ctx.lineWidth = 1.5;
+                    ctx.setLineDash([4, 4]);
+                    ctx.strokeStyle = "rgba(59, 130, 246, 0.4)";
+                    ctx.beginPath();
+                    ctx.moveTo(markedPoints[0].x * sx, markedPoints[0].y * sy);
+                    ctx.lineTo(markedPoints[1].x * sx, markedPoints[1].y * sy);
+                    ctx.stroke();
+                }
+
+                markedPoints.forEach((pt, i) => {
+                    const isGold = false; // Patterns are now consistently white/silver
+                    drawPearl(ctx, pt.x * sx, pt.y * sy, i + 1, (isDragging && dragIndex === i), isGold);
+                });
+            }
+        }
+
+
+        function drawPearl(ctx, px, py, label, isHighlight, isGold = false) {
+            // Outer glow
+            ctx.beginPath(); ctx.arc(px, py, 12, 0, Math.PI * 2);
+            ctx.fillStyle = isHighlight ? "rgba(59, 130, 246, 0.4)" : "rgba(255,255,255,0.1)";
+            ctx.fill();
+
+            // Main dot
+            ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI * 2); 
+            ctx.fillStyle = "#ffffff";
+            ctx.fill();
+
+            // Silver/Pearl border
+            ctx.strokeStyle = "rgba(200, 200, 200, 0.8)"; ctx.lineWidth = 1; ctx.stroke();
+
+            // Sheen
+            ctx.beginPath(); ctx.arc(px - 1, py - 1, 2, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(255,255,255,0.8)"; ctx.fill();
+
+            // Label (Always show now for clarity)
+            ctx.font = "bold 13px Inter, sans-serif";
+            ctx.fillStyle = "#ffffff";
+            ctx.shadowColor = "rgba(0,0,0,0.8)";
+            ctx.shadowBlur = 4;
+            const labelX = px + (px < (DISPLAY_SIZE / 2) ? -24 : 10);
+            const labelY = py - 8;
+            ctx.fillText(`${label}`, labelX, labelY);
+            ctx.shadowBlur = 0;
+        }
+
+        function updatePointCount() {
+            const n = triangleTransform.active ? 3 : (snakebiteTransform.active ? 2 : markedPoints.length);
+            let text = `${n} point${n !== 1 ? 's' : ''} placed`;
+            if (triangleTransform.active) text = "Triangle Pattern Active";
+            if (snakebiteTransform.active) text = "Snakebite Pattern Active";
+            document.getElementById("pointCountText").textContent = text;
+            document.getElementById("measureBtn").disabled = n < 1;
+        }
+
+        function clearPoints() { markedPoints = []; drawCanvas(); updatePointCount(); }
+        function undoLastPoint() { if (markedPoints.length > 0) { markedPoints.pop(); drawCanvas(); updatePointCount(); } }
+
+        function flipPatternSide() {
+            if (markedPoints.length === 0) return;
+            markedPoints = markedPoints.map(p => ({
+                x: Math.round((IMAGE_SIZE - p.x) * 100) / 100,
+                y: p.y
+            }));
+            drawCanvas();
+            showToast("Pattern flipped", "info");
+        }
+
+        // ==================== STEP 2: MIRROR & MEASURE ====================
+        async function mirrorAndMeasure() {
+            let finalPoints = [];
+            if (triangleTransform.active) finalPoints = getTransformedTrianglePoints();
+            else if (snakebiteTransform.active) finalPoints = getTransformedSnakebitePoints();
+            else finalPoints = [...markedPoints];
+
+            if (finalPoints.length < 1) { showToast("Place at least 1 landmark point", "error"); return; }
+
+            const payload = {
+                session_id: sessionId,
+                right_ear_points: finalPoints.map(p => ({ x: p.x, y: p.y })),
+                piercing_type: selectedPiercing || (finalPoints.length === 3 ? 'triangle' : 'custom'),
+            };
+
+            try {
+                showLoading("Mirroring landmarks & calculating distances...");
+                const resp = await fetch(`${API_URL}/mirror-and-measure`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+                if (!resp.ok) { const e = await resp.json(); throw new Error(e.detail || "Mirror failed"); }
+
+                const result = await resp.json();
+                displayResults(result);
+                setStep(4);
+                showToast("Landmarks mirrored! Open webcam to validate.", "success");
+
+            } catch (err) {
+                showToast(err.message, "error");
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // ==================== DISPLAY RESULTS ====================
+        function displayResults(result) {
+            const data = result.data;
+
+            document.getElementById("resultImages").innerHTML = `
+            <div class="ear-result-card">
+                <div class="ear-result-header right">👂 Right Ear — Landmarks</div>
+                <img src="data:image/png;base64,${data.right_ear.landmarks_image}" alt="Right Ear">
+            </div>
+            <div class="ear-result-card">
+                <div class="ear-result-header left">👂 Left Ear — Mirrored Landmarks</div>
+                <img src="data:image/png;base64,${data.left_ear.landmarks_image}" alt="Left Ear">
+            </div>
+        `;
+
+            let rows = data.distances.map(d => `
+            <tr>
+                <td><span class="pair-badge">${d.from_point} → ${d.to_point}</span></td>
+                <td class="value-px">${d.distance_pixels.toFixed(3)}</td>
+                <td class="value-cm">${d.distance_cm.toFixed(3)} cm</td>
+            </tr>
+        `).join("");
+
+            rows += `
+            <tr class="total-row">
+                <td><strong>Total</strong></td>
+                <td class="value-px"><strong>${data.total_distance.pixels.toFixed(3)}</strong></td>
+                <td class="value-cm"><strong>${data.total_distance.cm.toFixed(3)} cm</strong></td>
+            </tr>
+        `;
+
+            document.getElementById("distanceBody").innerHTML = rows;
+        }
+
+        // ==================== STEP MANAGEMENT ====================
+        function setStep(step) {
+            ["step1Indicator", "step2Indicator", "step3Indicator", "step4Indicator"].forEach((id, i) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.classList.remove("active", "completed");
+                if (i + 1 < step) el.classList.add("completed");
+                if (i + 1 === step) el.classList.add("active");
+            });
+            document.getElementById("connector1").classList.toggle("active", step >= 2);
+            document.getElementById("connector2").classList.toggle("active", step >= 3);
+            document.getElementById("connector3").classList.toggle("active", step >= 4);
+
+            document.getElementById("uploadCard").style.display = step === 1 ? "block" : "none";
+            document.getElementById("piercingCard").style.display = step === 2 ? "block" : "none";
+            document.getElementById("canvasCard").style.display = step === 3 ? "block" : "none";
+            document.getElementById("canvasCard").classList.toggle("canvas-section", step !== 3);
+            document.getElementById("resultsCard").style.display = step === 4 ? "block" : "none";
+            document.getElementById("resultsCard").classList.toggle("results-section", step !== 4);
+        }
+
+        function goBackToLandmarks() { markedPoints = []; drawCanvas(); updatePointCount(); setStep(3); }
+
+        function resetAll() {
+            rightFile = leftFile = sessionId = rightEarImage = leftEarImage = canvasImg = selectedPiercing = null;
+            markedPoints = [];
+            triangleTransform.active = false;
+            snakebiteTransform.active = false;
+            isTriangleLocked = false;
+            isSnakebiteLocked = false;
+            document.getElementById("rightFileName").textContent = "";
+            document.getElementById("leftFileName").textContent = "";
+            document.getElementById("rightBlueCheck").innerHTML = "";
+            document.getElementById("leftBlueCheck").innerHTML = "";
+            document.getElementById("rightUploadZone").classList.remove("has-file");
+            document.getElementById("leftUploadZone").classList.remove("has-file");
+            document.getElementById("segmentBtn").disabled = true;
+            document.getElementById("persistentStats").classList.remove("show");
+            setStep(1);
+            showToast("Reset complete", "info");
+        }
+
+        // ==================== EAR SIDE ====================
+        function setGlobalEarSide(side) {
+            currentEarSide = side;
+            document.getElementById("valToggleLeft").classList.toggle("active", side === 'left');
+            document.getElementById("valToggleRight").classList.toggle("active", side === 'right');
+            document.getElementById("toggleLeft").classList.toggle("active", side === 'left');
+            document.getElementById("toggleRight").classList.toggle("active", side === 'right');
+            document.getElementById("improvementReport").classList.remove("show");
+            document.getElementById("annotatedImg").src = "";
+            const btn = document.getElementById("analyzeBtn");
+            if (btn) { btn.innerHTML = "📸 Capture & Analyze Snapshot"; btn.disabled = false; }
+            showToast(`Target ear: ${side.toUpperCase()}`, "info");
+        }
+        function setEarSide(side) { setGlobalEarSide(side); }
+
+        // ==================== WEBCAM ====================
+        async function openWebcam() {
+            if (!sessionId) { showToast("No active session", "error"); return; }
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: "user" } });
+                webcamStream = stream;
+                document.getElementById("webcamVideo").srcObject = stream;
+                document.getElementById("webcamModal").classList.add("show");
+                isWebcamRunning = true;
+                showToast("Webcam started — align ear and capture", "success");
+            } catch (err) {
+                showToast("Camera access denied: " + err.message, "error");
+            }
+        }
+
+        function stopWebcam() {
+            isWebcamRunning = false;
+            if (webcamStream) webcamStream.getTracks().forEach(t => t.stop());
+            document.getElementById("webcamModal").classList.remove("show");
+            document.getElementById("annotatedImg").src = "";
+            document.getElementById("improvementReport").classList.remove("show");
+        }
+
+        async function captureSnapshot() {
+            if (!isWebcamRunning || !sessionId) return;
+
+            const btn = document.getElementById("analyzeBtn");
+            btn.innerHTML = "⏳ Analyzing...";
+            btn.disabled = true;
+
+            const video = document.getElementById("webcamVideo");
+            const canvas = document.getElementById("captureCanvas");
+            const ctx = canvas.getContext("2d");
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(async (blob) => {
+                lastCapturedBlob = blob;
+                const formData = new FormData();
+                formData.append("file", blob, "frame.jpg");
+                formData.append("session_id", sessionId);
+                formData.append("ear_side", currentEarSide);
+
+                try {
+                    const resp = await fetch(`${API_URL}/validate-frame`, { method: "POST", body: formData });
+                    if (!resp.ok) { showToast("API error in validation", "error"); btn.innerHTML = "📸 Capture & Analyze Snapshot"; btn.disabled = false; return; }
+
+                    const result = await resp.json();
+                    if (result.success && result.ear_detected) {
+                        document.getElementById("annotatedImg").src = `data:image/png;base64,${result.annotated_image}`;
+                        showImprovementReport(result);
+                        btn.innerHTML = "✅ Done — Click to capture again";
+                    } else {
+                        showToast("⚠️ No ear detected. Please align and try again.", "error");
+                        btn.innerHTML = "📸 Capture & Analyze Snapshot";
+                    }
+                } catch (err) {
+                    showToast("Network error: " + err.message, "error");
+                    btn.innerHTML = "📸 Capture & Analyze Snapshot";
+                }
+                btn.disabled = false;
+            }, "image/jpeg", 0.95);
+        }
+
+        function showImprovementReport(result) {
+            document.getElementById("accuracyPct").textContent = result.summary.overall_accuracy + "%";
+            document.getElementById("overallStatus").textContent =
+                `${result.summary.status} — ${result.summary.detected_markers}/${result.summary.total_points} markers detected`;
+
+            document.getElementById("improvementGrid").innerHTML = result.guidance.map(g => {
+                const needsWork = !g.correct && g.error_cm !== null;
+                const errMm = g.error_cm ? (g.error_cm * 10).toFixed(1) : null;
+                return `
+                <div class="imp-card ${needsWork ? 'needs-work' : ''}">
+                    <h5>Point ${g.point}</h5>
+                    <div class="val">${g.correct ? '✅ PERFECT' : (errMm ? errMm + 'mm off' : '❌ NOT FOUND')}</div>
+                    <div class="hint">${g.message}</div>
+                </div>
+            `;
+            }).join("");
+
+            document.getElementById("improvementReport").classList.add("show");
+            showToast("Analysis complete!", "success");
+        }
+
+        // ==================== LOADING / TOAST ====================
+        function showLoading(text) { document.getElementById("loadingText").textContent = text || "Processing..."; document.getElementById("loadingOverlay").classList.add("show"); }
+        function hideLoading() { document.getElementById("loadingOverlay").classList.remove("show"); }
+        function showToast(msg, type = "info") {
+            const t = document.getElementById("toast");
+            t.textContent = msg; t.className = `toast ${type}`;
+            requestAnimationFrame(() => t.classList.add("show"));
+            setTimeout(() => t.classList.remove("show"), 3500);
+        }
+
+        // ==================== HEALTH CHECK ====================
+        window.addEventListener("load", async () => {
+            try {
+                const resp = await fetch(`${API_URL}/`);
+                if (resp.ok) console.log("✓ Phase 2 API is running");
+                else showToast("⚠️ API not responding. Start: python app.py", "error");
+            } catch { showToast("⚠️ Cannot connect to API on port 8080", "error"); }
+        });
+    </script>
+</body>
+
+</html>
