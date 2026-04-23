@@ -1217,7 +1217,13 @@
 
     <script>
         // ==================== CONFIG ====================
-        const API_URL = "http://localhost:8080";
+        const DEFAULT_API_URL = "http://127.0.0.1:8000";
+        const urlParams = new URLSearchParams(window.location.search);
+        const configuredApiUrl = (urlParams.get("api") || localStorage.getItem("apiBaseUrl") || "").trim();
+        const isBackendOrigin =
+            window.location.protocol.startsWith("http") &&
+            ["8000", "8001"].includes(window.location.port);
+        const API_URL = configuredApiUrl || (isBackendOrigin ? window.location.origin : DEFAULT_API_URL);
         const IMAGE_SIZE = 256;
         const DISPLAY_SIZE = 384;
 
@@ -2040,9 +2046,11 @@
         window.addEventListener("load", async () => {
             try {
                 const resp = await fetch(`${API_URL}/`);
-                if (resp.ok) console.log("✓ Phase 2 API is running");
-                else showToast("⚠️ API not responding. Start: python app.py", "error");
-            } catch { showToast("⚠️ Cannot connect to API on port 8080", "error"); }
+                if (resp.ok) console.log(`✓ Phase 3 API is running at ${API_URL}`);
+                else showToast(`API not responding at ${API_URL}. Start: uvicorn app:app --reload`, "error");
+            } catch {
+                showToast(`Cannot connect to API at ${API_URL}`, "error");
+            }
         });
     </script>
 </body>

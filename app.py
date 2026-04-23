@@ -712,5 +712,5 @@ async def delete_session(session_id: str):
 
 # ==================== RUN SERVER ====================
 if __name__ == "__main__":
-    print("🚀 Phase 2 Blue Point Validation API on http://localhost:8080")
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    print("Phase 3 Blue Point Validation API on http://127.0.0.1:8000")
+    uvicorn.run(app, host="0.0.0.0", port=8000)
