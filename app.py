@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 import uvicorn
 import cv2
 import numpy as np
@@ -75,7 +75,7 @@ def _is_supported_model_file(path: str) -> bool:
     return os.path.isfile(path) and path.lower().endswith(supported_suffixes)
 
 
-def _find_torch_archive_root(path: str) -> str | None:
+def _find_torch_archive_root(path: str) -> Optional[str]:
     required_files = {"data.pkl", "version", "byteorder"}
     if not os.path.isdir(path):
         return None
